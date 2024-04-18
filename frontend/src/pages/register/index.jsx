@@ -26,6 +26,14 @@ class Register extends React.Component {
     this.onFinishFailed = this.onFinishFailed.bind(this);
   }
 
+  componentDidMount () {
+    document.title = 'Presto';
+  }
+
+  componentDidUpdate () {
+    document.title = 'Presto';
+  }
+
   onFinish (values) {
     const { email, name, password, checkedpassword } = values;
     if (password !== checkedpassword) {
@@ -39,7 +47,7 @@ class Register extends React.Component {
       console.log(res);
       message.success('Register success!');
       localStorage.setItem('token', res.token);
-      this.props.navigate('/');
+      this.props.navigate('/dashbord');
     }).catch((error) => {
       message.error(error.message);
     });

@@ -11,7 +11,7 @@ function App () {
     document.title = 'Presto';
   }, [])
   return (
-    <>Let&apos;s go! 555
+    <>
     <Button onClick={goLogin}>Go Login</Button>
     </>
   );

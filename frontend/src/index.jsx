@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './global.css';
 import LoginWrapper from './pages/login';
 import RegisterWrapper from './pages/register';
+import Dashboard from './pages/dashbord';
 
 const router = createBrowserRouter(
   [
@@ -15,7 +16,7 @@ const router = createBrowserRouter(
     },
     {
       path: 'dashboard',
-      element: <div>Dashboard</div>
+      Component: Dashboard
     },
     {
       path: 'login',
@@ -41,7 +42,6 @@ ReactDOM.render(
     <ConfigProvider
       theme={{
         token: {
-          // Seed Token，影响范围大
           colorPrimary: '#a0d911',
         },
       }}
