@@ -41,12 +41,12 @@ class Login extends React.Component {
       password,
     }).then((res) => {
       console.log(res);
-      if (res.status === 200) {
+      if (res.token) {
         message.success('Login success!');
         localStorage.setItem('token', res.token);
         this.props.navigate('/dashboard');
-      } else {
-        throw new Error('Failed to login');
+      } else if (res.error) {
+        message.error(res.error);
       }
     }).catch((error) => {
       message.error(error.message);
