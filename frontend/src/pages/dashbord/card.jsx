@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Avatar, Tooltip, message, Popconfirm } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-
 import { deleteSlide } from '../../utils/store';
 
 const CustomCard = ({ slide, deleteSlideCard }) => {
@@ -26,16 +25,14 @@ const CustomCard = ({ slide, deleteSlideCard }) => {
       message.error('Delete failed!');
     }
   }
+
   return (
       <Card
         style={{
-          width: 300,
+          width: 270,
         }}
         cover={
-          <img
-            alt="example"
-            src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-          />
+          <div style={{ backgroundColor: '#666666', height: 200 }}></div>
         }
         actions={[
           <Tooltip key="edit" title="Edit"> <EditOutlined onClick={handleEditClick}/></Tooltip>,
@@ -56,7 +53,12 @@ const CustomCard = ({ slide, deleteSlideCard }) => {
         <Meta
           avatar={<Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />}
           title={slide.title}
-          description={slide.updateTime}
+          description={
+            <div>
+              {slide.updateTime}
+              <div>Total {slide.slideContent.length} Page(s)</div>
+            </div>
+          }
         />
       </Card>
   );
