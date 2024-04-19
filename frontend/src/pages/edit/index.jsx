@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Button, Tooltip, message, Modal, Input } from 'antd';
+import { Layout, Button, Tooltip, message, Modal, Input, Drawer, InputNumber, ColorPicker, Select } from 'antd';
 import { LeftSquareOutlined, PlusCircleOutlined, VerticalRightOutlined, VerticalLeftOutlined, RollbackOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -80,13 +80,14 @@ const SlideContentContainer = styled.div`
     align-items: center;
     width: 100%;
     height: 100%;
+    border: none;
 `;
 const CardSlideContainer = styled.div`
     position: relative;
     background-color: 'white';
     border-radius: 10px;
-    width: 90%;
-    height: 100px;
+    width: 100%;
+    height: 120px;
     border: ${props => props.active ? '2px solid #a0d911' : '1px solid #C4C4C4'};
     cursor: pointer;
 `;
@@ -123,9 +124,9 @@ const FullScreenHeader = styled.div`
 `;
 
 const CardContainer = (props) => {
-  const { active, index = 0, children, onClick } = props;
+  const { active, index = 0, children, onClick, backgroundColor } = props;
   return (
-      <CardSlideContainer active={active} onClick={onClick}>
+      <CardSlideContainer active={active} onClick={onClick} style={{ backgroundColor }}>
         <IndexLabel active={active}>{index + 1}</IndexLabel>
         {children}
         <CardButtons active={active}>
@@ -139,10 +140,13 @@ const CardContainer = (props) => {
 
 const DafaultSlideContent = {
   templateId: 1,
+  backgroundColor: '#ffffff',
   title: {
     inEdit: false,
     text: 'Add a heading',
     style: {
+      backgroundColor: 'transparent',
+      fontFamily: 'Arial',
       margin: 0,
       marginBottom: 30,
       width: '40vw',
@@ -158,13 +162,15 @@ const DafaultSlideContent = {
     inEdit: false,
     text: 'Add a subheading',
     style: {
+      fontFamily: 'Arial',
       margin: 0,
-      width: '30vw',
+      width: '40vw',
       height: '70px',
       lineHeight: '70px',
       fontSize: 20,
       textAlign: 'center',
       border: '1px dashed #C4C4C4',
+      backgroundColor: 'transparent',
     }
   }
 }
@@ -200,9 +206,9 @@ const DafaultSlideCard = ({ ChangeCard, preview, ...slideContent }) => {
     ChangeCard({ subtitle: newSubtitle });
   }
   return (
-    <SlideContentContainer style = {{ transform: preview ? 'scale(0.21)' : 'scale(1)' }}>
+    <SlideContentContainer style = {{ transform: preview ? 'scale(0.21)' : 'scale(1)', backgroundColor: slideContent.backgroundColor }}>
       {!preview && title.inEdit
-        ? <input value = {title.text} style={title.style} placeholder='Input Title' onChange = {ChangeTitle} onBlur = {ExitTitleEdit} type="text" />
+        ? <input value = {title.text} style={title.style } placeholder='Input Title' onChange = {ChangeTitle} onBlur = {ExitTitleEdit} type="text" />
         : <h1 style={title.style} onClick={TitlegotoEdit}>{title.text}</h1>}
       {!preview && subtitle.inEdit
         ? <input value = {subtitle.text} style={subtitle.style} placeholder='Input Subtitle' onChange = {ChangeSubtitle} onBlur = {ExitSubtitleEdit} type="text" />
@@ -218,14 +224,13 @@ function generateSlideContent (props) {
   const Content = templateCardMap[templateId];
   return <Content {...slideContent.slideContent[currentSlide]} preview={true} />;
 }
-
 function generateActiveSlideContent (props) {
   if (!props || !props.templateId) {
     return <div>Please select a slide</div>;
   }
   const { templateId, ChangeCard, ...slideContent } = props;
   const Content = templateCardMap[templateId];
-  return <Content {...slideContent} ChangeCard={ChangeCard}/>;
+  return <Content {...slideContent} ChangeCard={ChangeCard} backgroundColor={slideContent.backgroundColor} />;
 }
 
 const EditPage = () => {
@@ -235,6 +240,39 @@ const EditPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [titleFontSize, setTitleFontSize] = useState(
+    slide.slideContent[currentSlide]?.title?.style?.fontSize || DafaultSlideContent.title.style.fontSize
+  );
+  const [subtitleFontSize, setSubtitleFontSize] = useState(
+    slide.slideContent[currentSlide]?.subtitle?.style?.fontSize || DafaultSlideContent.subtitle.style.fontSize
+  );
+  const [hasTitleAndSubtitle, setHasTitleAndSubtitle] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(slide.slideContent[currentSlide]?.backgroundColor || '#ffffff');
+  const [titleFontFamily, setTitleFontFamily] = useState(
+    slide.slideContent[currentSlide]?.title?.style?.fontFamily || DafaultSlideContent.title.style.fontFamily
+  );
+  const [subtitleFontFamily, setSubtitleFontFamily] = useState(
+    slide.slideContent[currentSlide]?.subtitle?.style?.fontFamily || DafaultSlideContent.subtitle.style.fontFamily
+  );
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Presto';
+  }, [])
+
+  useEffect(() => {
+    const currentTemplate = slide.slideContent[currentSlide]?.templateId;
+    setHasTitleAndSubtitle(currentTemplate === 1);
+  }, [slide.slideContent, currentSlide]);
+
   const handleClick = (index) => {
     setCurrentSlide(index);
   };
@@ -246,14 +284,14 @@ const EditPage = () => {
 
   async function getSlide (id) {
     const _slide = await getSlideDetails(id);
-    // console.log('_slide:', _slide);
-    setSlideId(_slide.slideContent?.length > 0
+    return _slide.slideContent?.length > 0
       ? _slide
       : {
           ..._slide,
-          slideContent: [DafaultSlideContent]
-        });
+          slideContent: [DafaultSlideContent],
+        };
   }
+
   const ChangeCard = (slideContent) => {
     setSlideId(prevSlide => ({
       ...prevSlide,
@@ -268,40 +306,47 @@ const EditPage = () => {
       }),
     }));
   };
+
   const saveSlide = async () => {
     const curSlide = slide;
     const store = await getStore();
     store[params.id] = curSlide;
     putStore(store)
       .then((result) => {
-        message.success('Saved Successfully');
+        if (isMounted) {
+          message.success('Saved Successfully');
+        }
       })
       .catch(() => {
-        message.error('Failed to save slide');
+        if (isMounted) {
+          message.error('Failed to save slide');
+        }
       });
-  }
+  };
 
   const deleteSlide = async () => {
     if (slide.slideContent.length === 1) {
       message.warning('Cannot delete the last slide');
       return;
     }
-
     const newSlideContent = slide.slideContent.filter((_, index) => index !== currentSlide);
     const newSlide = {
       ...slide,
       slideContent: newSlideContent,
     };
-
     try {
       const store = await getStore();
       store[params.id] = newSlide;
       await putStore(store);
-      message.success('Delete Successfully');
-      setSlideId(newSlide);
-      setCurrentSlide(Math.max(currentSlide - 1, 0));
+      if (isMounted) {
+        message.success('Delete Successfully');
+        setSlideId(newSlide);
+        setCurrentSlide(Math.max(currentSlide - 1, 0));
+      }
     } catch (error) {
-      message.error('Delete Failed');
+      if (isMounted) {
+        message.error('Delete Failed');
+      }
     }
   };
 
@@ -322,9 +367,13 @@ const EditPage = () => {
         title: editedTitle,
       };
       await putStore(store);
-      message.success('Title Updated Successfully');
+      if (isMounted) {
+        message.success('Title Updated Successfully');
+      }
     } catch (error) {
-      message.error('Failed to Update Title');
+      if (isMounted) {
+        message.error('Failed to Update Title');
+      }
     }
     setIsModalVisible(false);
   };
@@ -332,6 +381,7 @@ const EditPage = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+
   const toPrevious = () => {
     setCurrentSlide(currentSlide - 1);
   }
@@ -343,14 +393,57 @@ const EditPage = () => {
     setIsFullScreen(!isFullScreen);
   };
 
+  const handleTitleFontSizeChange = (value) => {
+    setTitleFontSize(value);
+  };
+
+  const handleSubtitleFontSizeChange = (value) => {
+    setSubtitleFontSize(value);
+  };
+
+  const handleSave = () => {
+    const newTitle = {
+      ...slide.slideContent[currentSlide].title,
+      style: {
+        ...slide.slideContent[currentSlide].title.style,
+        fontSize: titleFontSize,
+        fontFamily: titleFontFamily,
+      }
+    };
+    const newSubtitle = {
+      ...slide.slideContent[currentSlide].subtitle,
+      style: {
+        ...slide.slideContent[currentSlide].subtitle.style,
+        fontSize: subtitleFontSize,
+        fontFamily: subtitleFontFamily,
+      }
+    };
+    ChangeCard({
+      title: newTitle,
+      subtitle: newSubtitle,
+      backgroundColor: selectedColor || slide.slideContent[currentSlide].backgroundColor,
+    });
+    setIsDrawerOpen(false);
+  };
+
   useEffect(() => {
     if (!params.id) return;
-    getSlide(params.id);
-  }, [params.id]);
-  useEffect(() => {
-    document.title = 'Presto';
-  }, [])
+    getSlide(params.id).then((slide) => {
+      if (isMounted) {
+        setSlideId(slide);
+      }
+    });
+  }, [params.id, isMounted]);
   //   console.log('slide.slideContent:', slide?.slideContent);
+
+  useEffect(() => {
+    setTitleFontSize(
+      slide.slideContent[currentSlide]?.title?.style?.fontSize || DafaultSlideContent.title.style.fontSize
+    );
+    setSubtitleFontSize(
+      slide.slideContent[currentSlide]?.subtitle?.style?.fontSize || DafaultSlideContent.subtitle.style.fontSize
+    );
+  }, [slide.slideContent, currentSlide]);
   return (
     <Container>
         <Layout style={{ width: '100%' }}>
@@ -374,6 +467,9 @@ const EditPage = () => {
                         <Tooltip title="Preview the Slide in Fullscreen">
                         <Button onClick={previewFullScreen} type="dashed" style={{ marginRight: '20px', background: 'transparent', color: 'white' }}>Preview</Button>
                         </Tooltip>
+                        <Tooltip title="Design Font and Theme">
+                        <Button onClick={() => setIsDrawerOpen(true)} style={{ marginRight: '20px', background: 'transparent', color: 'white' }}>Design</Button>
+                        </Tooltip>
                         <Tooltip title="Save Current Slide">
                         <Button onClick={saveSlide} style={{ marginRight: '20px', background: 'transparent', color: 'white' }}> Save </Button>
                         </Tooltip>
@@ -388,18 +484,19 @@ const EditPage = () => {
                 {slide?.slideContent?.map((slideContent, index) => {
                   return (
                     <CardContainer
-                    key={index}
-                    active={index === currentSlide}
-                    index={index}
-                    onClick={() => handleClick(index)}
-                    >
-                    {generateSlideContent({
-                      templateId: slideContent.templateId,
-                      ...slide,
-                      currentSlide: index,
-                      key: index,
-                    })}
-                    </CardContainer>
+                        key={index}
+                        active={index === currentSlide}
+                        index={index}
+                        onClick={() => handleClick(index)}
+                        backgroundColor={slideContent.backgroundColor}
+                        >
+                        {generateSlideContent({
+                          templateId: slideContent.templateId,
+                          ...slide,
+                          currentSlide: index,
+                          key: index,
+                        })}
+                        </CardContainer>
                   );
                 })}
                 </LeftOutline>
@@ -421,7 +518,7 @@ const EditPage = () => {
                     style={{ backgroundColor: 'transparent', border: 'transparent', padding: 0 }}
                     />
                 )}
-                    <ASlide>
+                    <ASlide style={{ backgroundColor: slide.slideContent[currentSlide]?.backgroundColor }}>
                         {slide && slide.slideContent[currentSlide] && generateActiveSlideContent({ ...slide.slideContent[currentSlide], key: currentSlide, ChangeCard })}
                     </ASlide>
                 {currentSlide !== slide.slideContent.length - 1 && (
@@ -446,6 +543,81 @@ const EditPage = () => {
                     placeholder="Enter slide title"
                 />
         </Modal>
+        <Drawer
+        title="Design"
+        placement="top"
+        closable={true}
+        onClose={() => setIsDrawerOpen(false)}
+        open={isDrawerOpen}
+        height={200}
+        extra={
+            <Button type="primary" onClick={handleSave}>
+            Save
+            </Button>
+        }
+        >
+        <h3>Background</h3>
+        <ColorPicker
+            defaultValue={slide.slideContent[currentSlide]?.backgroundColor || '#ffffff'}
+            showText
+            onChangeComplete={(color) => {
+              setSelectedColor(color.toHexString());
+            }}
+            />
+        {hasTitleAndSubtitle && (
+            <>
+            <h3>Font Size</h3>
+            <div>
+                <label>Title: </label>
+                <InputNumber
+                min={1}
+                max={100}
+                value={titleFontSize}
+                onChange={handleTitleFontSizeChange}
+                />
+                <Select
+                    showSearch
+                    placeholder="Select a font"
+                    optionFilterProp="children"
+                    style={{ marginLeft: '10px' }}
+                    value={titleFontFamily}
+                    onChange={(value) => setTitleFontFamily(value)}
+                    options={[
+                      { value: 'Arial', label: 'Arial' },
+                      { value: 'Helvetica', label: 'Helvetica' },
+                      { value: 'Times New Roman', label: 'Times New Roman' },
+                      { value: 'Courier New', label: 'Courier New' },
+                      { value: 'Verdana', label: 'Verdana' },
+                    ]}
+        />
+        </div>
+            <div style={{ marginTop: '10px' }}>
+                <label>Subtitle: </label>
+                <InputNumber
+                min={1}
+                max={100}
+                value={subtitleFontSize}
+                onChange={handleSubtitleFontSizeChange}
+                />
+                <Select
+                    showSearch
+                    placeholder="Select a font"
+                    optionFilterProp="children"
+                    style={{ marginLeft: '10px' }}
+                    value={subtitleFontFamily}
+                    onChange={(value) => setSubtitleFontFamily(value)}
+                    options={[
+                      { value: 'Arial', label: 'Arial' },
+                      { value: 'Helvetica', label: 'Helvetica' },
+                      { value: 'Times New Roman', label: 'Times New Roman' },
+                      { value: 'Courier New', label: 'Courier New' },
+                      { value: 'Verdana', label: 'Verdana' },
+                    ]}
+        />
+            </div>
+            </>
+        )}
+        </Drawer>
     </Container>
   );
 };
