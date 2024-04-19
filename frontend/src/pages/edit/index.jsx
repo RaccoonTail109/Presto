@@ -339,7 +339,7 @@ const EditPage = () => {
     setCurrentSlide(currentSlide + 1);
   }
 
-  const toggleFullScreen = () => {
+  const previewFullScreen = () => {
     setIsFullScreen(!isFullScreen);
   };
 
@@ -371,8 +371,8 @@ const EditPage = () => {
                         </Tooltip>
                     </BackTitleContainer>
                     <div>
-                        <Tooltip title="Preview the Slide">
-                        <Button onClick={toggleFullScreen} type="dashed" style={{ marginRight: '20px', background: 'transparent', color: 'white' }}>Preview</Button>
+                        <Tooltip title="Preview the Slide in Fullscreen">
+                        <Button onClick={previewFullScreen} type="dashed" style={{ marginRight: '20px', background: 'transparent', color: 'white' }}>Preview</Button>
                         </Tooltip>
                         <Tooltip title="Save Current Slide">
                         <Button onClick={saveSlide} style={{ marginRight: '20px', background: 'transparent', color: 'white' }}> Save </Button>
@@ -409,7 +409,7 @@ const EditPage = () => {
                     <Tooltip title="Exit Preview">
                         <Button
                         icon={<RollbackOutlined />}
-                        onClick={toggleFullScreen}
+                        onClick={previewFullScreen}
                         />
                     </Tooltip>
                     </FullScreenHeader>
