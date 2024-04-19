@@ -7,7 +7,7 @@ import './global.css';
 import LoginWrapper from './pages/login';
 import RegisterWrapper from './pages/register';
 import Dashboard from './pages/dashbord';
-import EditPage from './pages/edit';
+import EditPageApp from './pages/edit/index';
 
 const router = createBrowserRouter(
   [
@@ -29,7 +29,7 @@ const router = createBrowserRouter(
     },
     {
       path: 'edit/:id',
-      Component: EditPage
+      Component: EditPageApp
     },
   ]
 );
