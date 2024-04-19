@@ -113,7 +113,7 @@ position: absolute;
 color: ${props => props.active ? '#a0d911' : 'black'};
 font-size: 15px;
 top:0;
-left:-15px;
+left:-18px;
 `;
 
 const FullScreenHeader = styled.div`
@@ -124,14 +124,14 @@ const FullScreenHeader = styled.div`
 `;
 
 const CardContainer = (props) => {
-  const { active, index = 0, children, onClick, backgroundColor } = props;
+  const { active, index = 0, children, onClick, backgroundColor, addSlide } = props;
   return (
       <CardSlideContainer active={active} onClick={onClick} style={{ backgroundColor }}>
         <IndexLabel active={active}>{index + 1}</IndexLabel>
         {children}
         <CardButtons active={active}>
           <CardButton>
-          <PlusCircleOutlined style={{ fontSize: '20px', color: 'white' }} />
+          <PlusCircleOutlined onClick = {() => addSlide(index)} style={{ fontSize: '20px', color: 'white' }} />
             </CardButton>
         </CardButtons>
       </CardSlideContainer>
@@ -426,6 +426,23 @@ const EditPage = () => {
     setIsDrawerOpen(false);
   };
 
+  const addSlide = (index) => {
+    const newSlide = {
+      ...DafaultSlideContent,
+    }
+    slide.slideContent.splice(index + 1, 0, newSlide);
+    setSlideId(
+      {
+        ...slide,
+        slideContent: [
+          ...slide.slideContent,
+        ],
+      }
+    );
+    setTimeout(() => { setCurrentSlide(index + 1) }, 50);
+    message.success('Slide Added Successfully, Please Clic Save to keep the changes');
+  };
+
   useEffect(() => {
     if (!params.id) return;
     getSlide(params.id).then((slide) => {
@@ -489,6 +506,7 @@ const EditPage = () => {
                         index={index}
                         onClick={() => handleClick(index)}
                         backgroundColor={slideContent.backgroundColor}
+                        addSlide={addSlide}
                         >
                         {generateSlideContent({
                           templateId: slideContent.templateId,
