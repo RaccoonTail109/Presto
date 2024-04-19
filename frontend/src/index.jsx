@@ -7,6 +7,7 @@ import './global.css';
 import LoginWrapper from './pages/login';
 import RegisterWrapper from './pages/register';
 import Dashboard from './pages/dashbord';
+import EditPage from './pages/edit';
 
 const router = createBrowserRouter(
   [
@@ -27,12 +28,8 @@ const router = createBrowserRouter(
       element: <RegisterWrapper />
     },
     {
-      path: 'create',
-      element: <div>Create</div>
-    },
-    {
       path: 'edit/:id',
-      element: <div>Edit</div>
+      Component: EditPage
     },
   ]
 );

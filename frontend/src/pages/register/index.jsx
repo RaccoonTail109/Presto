@@ -47,7 +47,7 @@ class Register extends React.Component {
       console.log(res);
       message.success('Register success!');
       localStorage.setItem('token', res.token);
-      this.props.navigate('/dashbord');
+      this.props.navigate('/dashboard');
     }).catch((error) => {
       message.error(error.message);
     });
