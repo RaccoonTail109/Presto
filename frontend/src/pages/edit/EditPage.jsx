@@ -27,7 +27,10 @@ function generateActiveSlideContent (props) {
 }
 
 const EditPage = () => {
+  // Solve the header component from layout
   const { Header } = Layout;
+
+  // Define various state variables using useState
   const [slide, setSlideId] = useState({ slideContent: [] });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -50,6 +53,12 @@ const EditPage = () => {
   );
   const [isMounted, setIsMounted] = useState(false);
 
+  // Use USEPARAMS to get routing parameters
+  const params = useParams();
+  // Use USENAVIGATE to get the navigation object
+  const navigate = useNavigate();
+
+  // Use useEffect to perform side effects in function components
   useEffect(() => {
     setIsMounted(true);
     return () => {
@@ -59,21 +68,39 @@ const EditPage = () => {
 
   useEffect(() => {
     document.title = 'Presto';
-  }, [])
+  }, []);
 
   useEffect(() => {
     const currentTemplate = slide.slideContent[currentSlide]?.templateId;
     setHasTitleAndSubtitle(currentTemplate === 1);
   }, [slide.slideContent, currentSlide]);
 
+  useEffect(() => {
+    if (!params.id) return;
+    getSlide(params.id).then((slide) => {
+      if (isMounted) {
+        setSlideId(slide);
+      }
+    });
+  }, [params.id, isMounted]);
+
+  useEffect(() => {
+    setTitleFontSize(
+      slide.slideContent[currentSlide]?.title?.style?.fontSize || DafaultSlideContent.title.style.fontSize
+    );
+    setSubtitleFontSize(
+      slide.slideContent[currentSlide]?.subtitle?.style?.fontSize || DafaultSlideContent.subtitle.style.fontSize
+    );
+  }, [slide.slideContent, currentSlide]);
+
+  //* +++++++++
   const handleClick = (index) => {
     setCurrentSlide(index);
   };
-  const params = useParams();
-  const navigate = useNavigate();
+
   const goDashboard = () => {
     navigate('/dashboard');
-  }
+  };
 
   async function getSlide (id) {
     const _slide = await getSlideDetails(id);
@@ -86,7 +113,7 @@ const EditPage = () => {
   }
 
   const ChangeCard = (slideContent) => {
-    setSlideId(prevSlide => ({
+    setSlideId((prevSlide) => ({
       ...prevSlide,
       slideContent: prevSlide.slideContent.map((content, index) => {
         if (index === currentSlide) {
@@ -149,7 +176,7 @@ const EditPage = () => {
   };
 
   const handleOk = async () => {
-    setSlideId(prevSlide => ({
+    setSlideId((prevSlide) => ({
       ...prevSlide,
       title: editedTitle,
     }));
@@ -177,10 +204,11 @@ const EditPage = () => {
 
   const toPrevious = () => {
     setCurrentSlide(currentSlide - 1);
-  }
+  };
+
   const toNext = () => {
     setCurrentSlide(currentSlide + 1);
-  }
+  };
 
   const previewFullScreen = () => {
     setIsFullScreen(!isFullScreen);
@@ -201,7 +229,7 @@ const EditPage = () => {
         ...slide.slideContent[currentSlide].title.style,
         fontSize: titleFontSize,
         fontFamily: titleFontFamily,
-      }
+      },
     };
     const newSubtitle = {
       ...slide.slideContent[currentSlide].subtitle,
@@ -209,7 +237,7 @@ const EditPage = () => {
         ...slide.slideContent[currentSlide].subtitle.style,
         fontSize: subtitleFontSize,
         fontFamily: subtitleFontFamily,
-      }
+      },
     };
     ChangeCard({
       title: newTitle,
@@ -236,24 +264,6 @@ const EditPage = () => {
     message.success('Slide Added Successfully, Please Click Save Buttom to keep the changes');
   };
 
-  useEffect(() => {
-    if (!params.id) return;
-    getSlide(params.id).then((slide) => {
-      if (isMounted) {
-        setSlideId(slide);
-      }
-    });
-  }, [params.id, isMounted]);
-  //   console.log('slide.slideContent:', slide?.slideContent);
-
-  useEffect(() => {
-    setTitleFontSize(
-      slide.slideContent[currentSlide]?.title?.style?.fontSize || DafaultSlideContent.title.style.fontSize
-    );
-    setSubtitleFontSize(
-      slide.slideContent[currentSlide]?.subtitle?.style?.fontSize || DafaultSlideContent.subtitle.style.fontSize
-    );
-  }, [slide.slideContent, currentSlide]);
   return (
       <Container>
           <Layout style={{ width: '100%' }}>
